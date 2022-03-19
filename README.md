@@ -378,3 +378,208 @@ edit.blade.php
     @include('posts.partials.edit_post')
 @endsection
 ```
+## Fichiers du dossier _partials_
+
+post.blade.php
+```php
+<div class="card shadow">
+  <div class="card-body">
+
+  	{{-- Post title  --}}
+    <h4 class="card-title">
+    	{{ $post->title }}
+    </h4>
+
+    {{-- Owner name with created_at --}}
+    <small class="text-muted">
+    	Posted by: <b>{{ $post->owner->name }}</b> on {{ $post->created_at->format('M d, Y H:i:s') }}
+    </small>
+
+    {{-- Post body --}}
+    <p class="card-text">
+    	{{ $post->body }}
+    </p>
+
+    {{-- include all comments related to this post --}}
+    <hr>
+    @include('posts.partials.comments')
+  </div>
+</div>
+
+add_comment.blade.php
+```php
+<form action="{{ route('comments.store', $post->id) }}" method="POST" class="mt-2 mb-4">
+	@csrf
+
+	<div class="input-group">
+	  <input 
+	  	name="new_comment" 
+	  	type="text" 
+	  	class="form-control" 
+	  	placeholder="write your comment.."
+	  	required>
+
+	  <div class="input-group-append">
+	    <button class="btn btn-primary" type="submit">Add Comment</button> 
+	  </div>
+
+	</div>
+
+</form>
+```
+
+add_reply.blade.php
+```php
+<form action="{{ route('replies.store', $comment->id) }}" method="POST" class="mb-2">
+	@csrf
+
+	<div class="input-group">
+	  <input 
+	  	name="new_reply" 
+	  	type="text" 
+	  	class="form-control" 
+	  	placeholder="write your reply.."
+	  	required>
+
+	  <div class="input-group-append">
+	    <button class="btn btn-primary" type="submit">reply</button> 
+	  </div>
+
+	</div>
+
+</form>
+```
+
+comments.blade.php
+```php
+<h4 class="card-title">Comments</h4>
+
+{{-- add comment form --}}
+@include('posts.partials.add_comment')
+    
+{{-- list all comments --}}
+@forelse($post->comments as $comment)
+	<div class="card-text">
+		<b>{{ $comment->owner->name }}</b> said
+		<small class="text-muted">
+		    {{ $comment->created_at->diffForHumans() }}
+		</small>
+		<p>{{ $comment->body }}</p>
+
+		{{-- include add reply form --}}
+		@include('posts.partials.add_reply')
+
+		{{-- list all replies --}}
+		@include('posts.partials.replies')
+	</div>
+	{!! $loop->last ? '' : '<hr>' !!}
+@empty
+	<p class="card-text">no comments yet!</p>
+@endforelse
+
+create_post.blade.php
+```php
+<form action="{{ route('posts.store') }}" method="post">
+    @csrf
+
+    {{-- Post title --}}
+    <div class="form-group">
+      <label for="title">Post title</label>
+      <input type="text"
+                name="title"
+                id="title"
+                class="form-control"
+                placeholder="write post title here.."
+                required />
+
+        @if ($errors->has('title'))
+            <small class="text-danger">{{ $errors->first('title') }}</small>
+        @endif
+    </div>
+    {{-- End --}}
+
+    {{-- Post body --}}
+    <div class="form-group">
+      <label for="body">Post body</label>
+      <textarea class="form-control"
+                name="body"
+                id="body"
+                rows="3"
+                placeholder="write post body here.."
+                required
+                style="resize: none;"></textarea>
+
+        @if ($errors->has('body'))
+            <small class="text-danger">{{ $errors->first('body') }}</small>
+        @endif
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save Post</button>
+        <a href="{{ route('home') }}" class="btn btn-default">Back</a>
+    </div>
+
+</form>
+```
+
+edit_post.blade.php
+```php
+<form action="{{ route('posts.update', $post->id) }}" method="post">
+    @csrf
+    @method('PATCH')
+
+    {{-- Post title --}}
+    <div class="form-group">
+      <label for="title">Post title</label>
+      <input type="text"
+                name="title"
+                id="title"
+                class="form-control"
+                value="{{ $post->title }}"
+                placeholder="write post title here.."
+                required />
+
+        @if ($errors->has('title'))
+            <small class="text-danger">{{ $errors->first('title') }}</small>
+        @endif
+    </div>
+    {{-- End --}}
+
+    {{-- Post body --}}
+    <div class="form-group">
+      <label for="body">Post body</label>
+      <textarea class="form-control"
+                name="body"
+                id="body"
+                rows="3"
+                placeholder="write post body here.."
+                required
+                style="resize: none;">{{ $post->body }}</textarea>
+
+        @if ($errors->has('body'))
+            <small class="text-danger">{{ $errors->first('body') }}</small>
+        @endif
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Update Post</button>
+        <a href="{{ route('home') }}" class="btn btn-default">Back</a>
+    </div>
+
+</form>
+```
+
+replies.blade.php
+```php
+
+{{-- list all replies for a comment --}}
+@foreach ($comment->replies as $reply)
+    
+  <div class="ml-4">
+		<b>{{ $reply->owner->name }}</b> replied
+		<small class="text-muted float">{{ $reply->created_at->diffForHumans() }}</small>
+		<p>{{ $reply->body }}</p>
+  </div>
+
+@endforeach
+```

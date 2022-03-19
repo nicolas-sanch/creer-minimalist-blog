@@ -205,3 +205,176 @@ class Reply extends Model
     }
 }
 ```
+
+## L'authentification
+
+Nous allons utiliser (Laravel Breeze)[https://laravel.com/docs/9.x/starter-kits#laravel-breeze] pour implémenter l'authentification. <br>
+
+❗ Suivez la documentation officielle sans oublier que nous intéragissons avec nos services via Sail
+
+## Les routes
+
+routes/web.php
+
+```php
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\ReplyController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+require __DIR__.'/auth.php';
+
+// group the following routes by auth middleware - you have to be signed-in to proceeed
+Route::group(['middleware' => 'auth'], function() {
+	// Dashboard
+	Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+	// Posts resourcefull controllers routes
+	Route::resource('posts', PostController::class);
+
+	// Comments routes
+	Route::group(['prefix' => '/comments', 'as' => 'comments.'], function() {
+        // store comment route
+		Route::post('/{post}', [CommentController::class, 'store'])->name('store');
+	});
+
+	// Replies routes
+	Route::group(['prefix' => '/replies', 'as' => 'replies.'], function() {
+        // store reply route
+		Route::post('/{comment}', [ReplyController::class, 'store'])->name('store');
+	});
+});
+```
+
+Les routes accessibles après s'être authentifié doivent utiliser le middleware _auth_
+
+## Bootstrap 4
+
+Nous allons créer l'arborescence de dossier _resources/views/posts/partials_ pour héberger nos blocks de code. <br>
+
+home.blade.php
+```php
+@extends('layouts.app')
+
+@section('content')
+
+<div class="clearfix">
+    <h2 class="float-left">List of all projects</h2>
+
+    {{-- link to create new post --}}
+    <a href="{{ route('posts.create') }}" class="btn btn-link float-right">Create new post</a>
+</div>
+
+{{-- List all posts --}}
+@forelse ($posts as $post)
+    <div class="card m-2 shadow-sm">
+        <div class="card-body">
+
+            {{-- post title --}}
+            <h4 class="card-title">
+                <a href="{{ route('posts.show', $post->id) }}">{{ $post->title }}</a>
+            </h4>
+
+            <p class="card-text">
+                
+                {{-- post owner --}}
+                <small class="float-left">By: {{ $post->owner->name }}</small>
+
+                {{-- creation time --}}
+                <small class="float-right text-muted">{{ $post->created_at->format('M d, Y h:i A') }}</small>
+                
+                {{-- check if the signed-in user is the post owner, then show edit post link --}}
+                @if (auth()->id() == $post->owner->id )
+                    {{-- edit post link --}}
+                    <small class="float-right mr-2 ml-2">
+                        <a href="{{ route('posts.edit', $post->id) }}" class="float-right">edit your post</a>
+                    </small>
+                @endif
+            </p>
+        </div>
+    </div>
+@empty
+    <p>No posts yet, stay tuned!</p>
+@endforelse
+
+@endsection
+```
+
+Dans _resources/views/layouts/app.blade.php_ nous ajoutons l'élément :
+```php
+<main class="container col-md-8 py-4">
+    @yield('content')
+</main>
+```
+
+Dans le dossier _posts_, nous créons les fichiers :
+* create.blade.php
+* edit.blade.php
+* show.blade.php
+
+create.blade.php
+```php
+
+{{-- extends the layouts/app.blade.php --}}
+@extends('layouts.app')
+
+@section('content')
+
+	{{-- Start card --}}
+    <div class="card shadow">
+        <div class="card-body">
+            <h4 class="card-title">Create new post</h4>
+            <div class="card-text">
+                @include('posts.partials.create_post')
+            </div>
+        </div>
+    </div>
+  {{-- End --}}
+    
+@endsection
+```
+
+show.blade.php
+```php
+@extends('layouts.app')
+
+@section('content')
+
+	{{-- show post --}}
+	@include('posts.partials.post')
+
+@endsection
+```
+
+edit.blade.php
+```php
+@extends('layouts.app')
+
+@section('content')
+    {{-- show edit post form --}}
+    @include('posts.partials.edit_post')
+@endsection
+```

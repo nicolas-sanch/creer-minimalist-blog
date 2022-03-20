@@ -1,5 +1,13 @@
 # Créer un blog minimaliste avec Laravel
 
+Nous allons créer un système minimaliste de blog implémentant l'authentification de Laravel.<br>
+
+Voici un aperçu du site :
+![Maquette du site](img/maquette.png)
+
+Le schéma de bdd utilisé est :
+![BDD](img/bdd.png)
+
 ## Un nouveau projet Laravel
 Avant de démarrer, nous avons besoin de [Docker Desktop](https://docs.docker.com/desktop/) et, les utilisateurs de Windows doivent s'assurer d'avoir _Windows Subsystem for Linux 2_ d'installé et activé. 
 
@@ -277,15 +285,15 @@ Nous allons créer l'arborescence de dossier _resources/views/posts/partials_ po
 
 home.blade.php
 ```php
-@extends('layouts.app')
+@extends('layouts.main')
 
 @section('content')
 
 <div class="clearfix">
-    <h2 class="float-left">List of all projects</h2>
+    <h2 class="float-left">Liste de tous les sujets</h2>
 
     {{-- link to create new post --}}
-    <a href="{{ route('posts.create') }}" class="btn btn-link float-right">Create new post</a>
+    <a href="{{ route('posts.create') }}" class="btn btn-link float-right">Créer une nouvelle publication</a>
 </div>
 
 {{-- List all posts --}}
@@ -301,7 +309,7 @@ home.blade.php
             <p class="card-text">
                 
                 {{-- post owner --}}
-                <small class="float-left">By: {{ $post->owner->name }}</small>
+                <small class="float-left">Par: {{ $post->owner->name }}</small>
 
                 {{-- creation time --}}
                 <small class="float-right text-muted">{{ $post->created_at->format('M d, Y h:i A') }}</small>
@@ -310,14 +318,14 @@ home.blade.php
                 @if (auth()->id() == $post->owner->id )
                     {{-- edit post link --}}
                     <small class="float-right mr-2 ml-2">
-                        <a href="{{ route('posts.edit', $post->id) }}" class="float-right">edit your post</a>
+                        <a href="{{ route('posts.edit', $post->id) }}" class="float-right">éditer votre publication</a>
                     </small>
                 @endif
             </p>
         </div>
     </div>
 @empty
-    <p>No posts yet, stay tuned!</p>
+    <p>Aucune publication créée pour l'instant !</p>
 @endforelse
 
 @endsection
@@ -346,7 +354,7 @@ create.blade.php
 	{{-- Start card --}}
     <div class="card shadow">
         <div class="card-body">
-            <h4 class="card-title">Create new post</h4>
+            <h4 class="card-title">Créer une nouvelle publication</h4>
             <div class="card-text">
                 @include('posts.partials.create_post')
             </div>
@@ -392,7 +400,7 @@ post.blade.php
 
     {{-- Owner name with created_at --}}
     <small class="text-muted">
-    	Posted by: <b>{{ $post->owner->name }}</b> on {{ $post->created_at->format('M d, Y H:i:s') }}
+    	Publié par : <b>{{ $post->owner->name }}</b> le {{ $post->created_at->format('M d, Y H:i:s') }}
     </small>
 
     {{-- Post body --}}
@@ -405,6 +413,7 @@ post.blade.php
     @include('posts.partials.comments')
   </div>
 </div>
+```
 
 add_comment.blade.php
 ```php
@@ -416,11 +425,11 @@ add_comment.blade.php
 	  	name="new_comment" 
 	  	type="text" 
 	  	class="form-control" 
-	  	placeholder="write your comment.."
+	  	placeholder="écrire votre commentaire.."
 	  	required>
 
 	  <div class="input-group-append">
-	    <button class="btn btn-primary" type="submit">Add Comment</button> 
+	    <button class="btn btn-primary" type="submit">Ajouter un commentaire</button> 
 	  </div>
 
 	</div>
@@ -438,11 +447,11 @@ add_reply.blade.php
 	  	name="new_reply" 
 	  	type="text" 
 	  	class="form-control" 
-	  	placeholder="write your reply.."
+	  	placeholder="écrire votre réponse.."
 	  	required>
 
 	  <div class="input-group-append">
-	    <button class="btn btn-primary" type="submit">reply</button> 
+	    <button class="btn btn-primary" type="submit">répondre</button> 
 	  </div>
 
 	</div>
@@ -452,7 +461,7 @@ add_reply.blade.php
 
 comments.blade.php
 ```php
-<h4 class="card-title">Comments</h4>
+<h4 class="card-title">Commentaires</h4>
 
 {{-- add comment form --}}
 @include('posts.partials.add_comment')
@@ -460,7 +469,7 @@ comments.blade.php
 {{-- list all comments --}}
 @forelse($post->comments as $comment)
 	<div class="card-text">
-		<b>{{ $comment->owner->name }}</b> said
+		<b>{{ $comment->owner->name }}</b> dit
 		<small class="text-muted">
 		    {{ $comment->created_at->diffForHumans() }}
 		</small>
@@ -474,8 +483,9 @@ comments.blade.php
 	</div>
 	{!! $loop->last ? '' : '<hr>' !!}
 @empty
-	<p class="card-text">no comments yet!</p>
+	<p class="card-text">Il n'y a pas encore de commentaires !</p>
 @endforelse
+```
 
 create_post.blade.php
 ```php
@@ -484,12 +494,12 @@ create_post.blade.php
 
     {{-- Post title --}}
     <div class="form-group">
-      <label for="title">Post title</label>
+      <label for="title">Titre de la publication</label>
       <input type="text"
                 name="title"
                 id="title"
                 class="form-control"
-                placeholder="write post title here.."
+                placeholder="écrire le titre de la publication ici ..."
                 required />
 
         @if ($errors->has('title'))
@@ -500,12 +510,12 @@ create_post.blade.php
 
     {{-- Post body --}}
     <div class="form-group">
-      <label for="body">Post body</label>
+      <label for="body">Contenu de la publication</label>
       <textarea class="form-control"
                 name="body"
                 id="body"
                 rows="3"
-                placeholder="write post body here.."
+                placeholder="écrire le contenu de la publication ici ..."
                 required
                 style="resize: none;"></textarea>
 
@@ -515,8 +525,8 @@ create_post.blade.php
     </div>
 
     <div class="form-group">
-        <button type="submit" class="btn btn-primary">Save Post</button>
-        <a href="{{ route('home') }}" class="btn btn-default">Back</a>
+        <button type="submit" class="btn btn-primary">Sauvegarder la publication</button>
+        <a href="{{ route('home') }}" class="btn btn-default">Retour</a>
     </div>
 
 </form>
@@ -530,13 +540,13 @@ edit_post.blade.php
 
     {{-- Post title --}}
     <div class="form-group">
-      <label for="title">Post title</label>
+      <label for="title">Titre de la publication</label>
       <input type="text"
                 name="title"
                 id="title"
                 class="form-control"
                 value="{{ $post->title }}"
-                placeholder="write post title here.."
+                placeholder="écire le titre de la publication ici ..."
                 required />
 
         @if ($errors->has('title'))
@@ -547,12 +557,12 @@ edit_post.blade.php
 
     {{-- Post body --}}
     <div class="form-group">
-      <label for="body">Post body</label>
+      <label for="body">Contenu de la publication</label>
       <textarea class="form-control"
                 name="body"
                 id="body"
                 rows="3"
-                placeholder="write post body here.."
+                placeholder="écrire le contenu de la publication ici ..."
                 required
                 style="resize: none;">{{ $post->body }}</textarea>
 
@@ -562,8 +572,8 @@ edit_post.blade.php
     </div>
 
     <div class="form-group">
-        <button type="submit" class="btn btn-primary">Update Post</button>
-        <a href="{{ route('home') }}" class="btn btn-default">Back</a>
+        <button type="submit" class="btn btn-primary">Mettre à jour la publication</button>
+        <a href="{{ route('home') }}" class="btn btn-default">Retour</a>
     </div>
 
 </form>
@@ -571,12 +581,11 @@ edit_post.blade.php
 
 replies.blade.php
 ```php
-
 {{-- list all replies for a comment --}}
 @foreach ($comment->replies as $reply)
     
   <div class="ml-4">
-		<b>{{ $reply->owner->name }}</b> replied
+		<b>{{ $reply->owner->name }}</b> a répondu
 		<small class="text-muted float">{{ $reply->created_at->diffForHumans() }}</small>
 		<p>{{ $reply->body }}</p>
   </div>
@@ -762,9 +771,9 @@ class ReplyController extends Controller
         ]);
 
         /** 
-            store the new reply through relationship, 
-            through this way you don't have to 
-            provide `comment_id` field inside create() method
+        *    store the new reply through relationship, 
+        *    through this way you don't have to 
+        *    provide `comment_id` field inside create() method
         */
         $comment->replies()->create([
             'user_id' => auth()->id(),
@@ -814,4 +823,3 @@ class HomeController extends Controller
     }
 }
 ```
-

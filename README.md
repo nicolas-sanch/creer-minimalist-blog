@@ -602,7 +602,7 @@ Dans _app/Http/Controllers_ nous commençons par PostController.php
 
 namespace App\Http\Controllers;
 
-use App\Post;
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -714,8 +714,8 @@ Ensuite, CommentController.php
 
 namespace App\Http\Controllers;
 
-use App\Post;
-use App\Comment;
+use App\Models\Post;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
@@ -751,8 +751,8 @@ ReplyController
 
 namespace App\Http\Controllers;
 
-use App\Comment;
-use App\Reply;
+use App\Models\Comment;
+use App\Models\Reply;
 use Illuminate\Http\Request;
 
 class ReplyController extends Controller
@@ -794,7 +794,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Post;
+use App\Models\Post;
 
 class HomeController extends Controller
 {

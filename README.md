@@ -331,7 +331,7 @@ Les routes accessibles après s'être authentifié doivent utiliser le middlewar
 @endsection
 ```
 
-Dans _resources/views/layouts/app.blade.php_ nous ajoutons l'élément :
+Dans _resources/views/layouts/main.blade.php_ nous ajoutons l'élément :
 ```php
 <main class="container col-md-8 py-4">
     @yield('content')

@@ -281,9 +281,9 @@ Les routes accessibles après s'être authentifié doivent utiliser le middlewar
 
 ## Bootstrap 4
 
-Nous allons créer l'arborescence de dossier _resources/views/posts/partials_ pour héberger nos blocks de code. <br>
+1 - Nous allons créer l'arborescence de dossier _resources/views/posts/partials_ pour héberger nos blocks de code. <br>
 
-home.blade.php
+ 2 - Créer le fichier home.blade.php dans _resources/views/_
 ```php
 @extends('layouts.main')
 

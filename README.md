@@ -331,11 +331,35 @@ Les routes accessibles après s'être authentifié doivent utiliser le middlewar
 @endsection
 ```
 
-Dans _resources/views/layouts/main.blade.php_ nous ajoutons l'élément :
+Nous créons le fichier template _resources/view/layouts/main.blade.php_
+
 ```php
-<main class="container col-md-8 py-4">
-    @yield('content')
-</main>
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        <title>{{ config('app.name', 'Laravel') }}</title>
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
+
+        <!-- Styles -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+        <!-- Scripts -->
+        <script src="{{ asset('js/app.js') }}" defer></script>
+    </head>
+    <body>
+
+        <main class="container col-md-8 py-4">
+            @yield('content')
+        </main>
+
+    </body>
+</html>
 ```
 
 Dans le dossier _posts_, nous créons les fichiers :
@@ -345,9 +369,7 @@ Dans le dossier _posts_, nous créons les fichiers :
 
 create.blade.php
 ```php
-
-{{-- extends the layouts/app.blade.php --}}
-@extends('layouts.app')
+@extends('layouts.main')
 
 @section('content')
 
@@ -367,7 +389,7 @@ create.blade.php
 
 show.blade.php
 ```php
-@extends('layouts.app')
+@extends('layouts.main')
 
 @section('content')
 
@@ -379,7 +401,7 @@ show.blade.php
 
 edit.blade.php
 ```php
-@extends('layouts.app')
+@extends('layouts.main')
 
 @section('content')
     {{-- show edit post form --}}

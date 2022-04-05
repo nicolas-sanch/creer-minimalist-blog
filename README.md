@@ -107,7 +107,7 @@ On ajoute des attributs et les relations au model Post
 ```php
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -148,7 +148,7 @@ Ainsi qu'au model Comment
 ```php
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -186,7 +186,7 @@ Et qu'au model Reply
 ```php
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

@@ -1,49 +1,61 @@
 # Créer un blog minimaliste avec Laravel
 
-Nous allons créer un système minimaliste de blog implémentant l'authentification de Laravel.<br>
+L'objectif de ce tutoriel est de prendre en main Laravel en réalisant un système minimaliste de blog.<br>
 
-Voici un aperçu du site :
+L'aspect de l'application sera le suivant :
+
 ![Maquette du site](img/maquette.png)
 
-Le schéma de bdd utilisé est :
+Pour ce tutoriel, nous allons utiliser le schéma de bdd suivant :
 ![BDD](img/bdd.png)
 
-## Un nouveau projet Laravel
-Avant de démarrer, nous avons besoin de [Docker Desktop](https://docs.docker.com/desktop/) et, les utilisateurs de Windows doivent s'assurer d'avoir _Windows Subsystem for Linux 2_ d'installé et activé. 
+## 1 - Un nouveau projet Laravel
 
-On commence par créer un nouveau projet Laravel
+Avant de démarrer notre développement, nous avons besoin des outils suivant :
+* _Windows Subsystem for Linux 2_ associé à une instance Linux pour les utilisateurs de Windows. L'installation est documentée [ici](https://blog.devgenius.io/kickstart-your-laravel-web-app-using-laravel-sail-30276265e588) et [là](https://web-id.fr/blog/setup-windows-wsl2-x-ubuntu-x-laravel-sail-docker)
+* [Docker Desktop](https://docs.docker.com/desktop/).
+* [Visual Studio Code](https://code.visualstudio.com/Download)
+* [Un compte Gitlab](https://gitlab.com/users/sign_in)
+
+Ensuite, on [créer un nouveau projet Laravel](https://laravel.com/docs/9.x)
 
 ```curl -s "https://laravel.build/minimalist-blog-laravel" | bash```
 
-Ensuite, on lance notre environnement de développement
+On ouvre le dossier _minimalist-blog-laravel_ avec Visual Studio <br>
+Dans Visual Studio, on ouvre un terminal et lance :
 
 ```bash
-cd minimalist-blog-laravel
- 
 ./vendor/bin/sail up -d     # -d pour detach mode
 ```
+Prenez le temps d'observer les relations entre le fichier _docker-compose.yml_ à la racine de notre projet et _Containers/Apps_ de _Docker Desktop_ <br>
+En effet, derrier sail se cache docker-compose. <br>
 
-Cela créer les services présents dans _docker-compose.yml_ <br>
+Enfin, jetons un coup d'oeil à http://localhost !<br>
 
-Nous pouvons visualiser le résultat htt://localhost <br>
+## 2 - Models, migrations et controllers
 
-## Models, migrations et controllers
+Nous allons maintenant notre projet Laravel pour correspondre au schéma de bdd présenté en introduction. <br>
+Pour cela, nous allons manipuler trois types de fichiers :
+* Les [models](https://laravel.com/docs/9.x/eloquent) (app/Models)
+* Les fichiers de [migrations](https://laravel.com/docs/9.x/migrations) (database/migrations)
+* Et les [controllers](https://laravel.com/docs/9.x/controllers) (app/Http/Controllers)
 
 On créer les models avec les fichiers de migration et controllers ([Doc](https://laravel.com/docs/9.x/eloquent#generating-model-classes)) <br>
 
-On utilise [artisan](https://laravel.com/docs/9.x/artisan) à travers [sail](https://laravel.com/docs/9.x/sail)
+Nous allons utiliser [artisan](https://laravel.com/docs/9.x/artisan), l'interface en ligne de commande de Laravel pour générer ces fichiers ! <br>
+Attention, nous utilisons artisan à travers [sail](https://laravel.com/docs/9.x/sail)
 
 ```bash
 sail php artisan make:model Post -mc     # migration et controller
-sail php artisan make:model Comment -mc
-sail php artisan make:model Reply -mc
 ```
-## Contenu des migrations
+Enfin, adaptez cette commande pour _Comment_ et _Reply_ !
 
-database/migrations/create_posts_table.php
+### Contenu des migrations
+
+Ici, nous allons ajouter les champs à nos tables. <br>
+
+Modifier la fonction up() de database/migrations/create_posts_table.php tel que :
 ```php
-<?php
-
 public function up()
 {
     Schema::create('posts', function (Blueprint $table) {
@@ -56,45 +68,15 @@ public function up()
 }
 ```
 
-database/migrations/create_comments_table.php
+Avec l'exemple de create_posts_table.php, modifier les fonctions up() de database/migrations/create_comments_table.php et database/migrations/create_replies_table.php.<br>
+
+
+### Contenu des models et création des relations
+
+Notre schéma de bdd contient des tables ainsi que des relations !
+
+Commençons par ajouter une relation _one-to_many_ au model User (ce modèle était déjà présent à la création du projet Laravel) en ajoutant la fonction suivante à la classe User :
 ```php
-<?php
-
-public function up()
-{
-    Schema::create('comments', function (Blueprint $table) {
-        $table->bigIncrements('id');
-        $table->unsignedInteger('user_id');
-        $table->unsignedInteger('post_id');
-        $table->text('body');
-        $table->timestamps();
-    });
-}
-```
-
-database/migrations/create_replies_table.php
-```php
-<?php
-
-public function up()
-{
-    Schema::create('replies', function (Blueprint $table) {
-        $table->bigIncrements('id');
-        $table->unsignedInteger('user_id');
-        $table->unsignedInteger('comment_id');
-        $table->text('body');
-        $table->timestamps();
-    });
-}
-```
-
-## Contenu des models et création des relations
-
-On ajoute une relation _one-to_many_ au model User
-```php
-
-<?php
-
 /** User model **/
 /** One to Many relation with Post **/
 public function posts() 
@@ -103,7 +85,7 @@ public function posts()
 }
 ```
 
-On ajoute des attributs et les relations au model Post
+Ensuite, on ajoute des attributs et les relations au model Post
 ```php
 <?php
 
@@ -182,7 +164,7 @@ class Comment extends Model
 }
 ```
 
-Et qu'au model Reply
+Enfin, à vous de compléter la class Reply
 ```php
 <?php
 
@@ -192,27 +174,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reply extends Model
 {
-    # table name to be used by model.
+    // table name to be used by model.
     protected $table = 'replies';
 
-    # columns names to be used in mass-assignment
+    // columns names to be used in mass-assignment
     protected $fillable = ['user_id', 'comment_id', 'body'];
 
     /* Relations */
 
-    # One-to-Many inverse relationship with User model.
-    public function owner()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
+    // One-to-Many inverse relationship with User model.
+    /*
+    	Code here
+    */
 
-    # One-to-Many inverse relationship with Comment model.
-    public function comment()
-    {
-    	return $this->belongsTo(Comment::class, 'comment_id');
-    }
+    // One-to-Many inverse relationship with Comment model.
+    /*
+    	Code here
+    */  
 }
 ```
+
+Grâce à (Eloquent)[https://laravel.com/docs/9.x/eloquent] nous "avons codé" notre bdd sans écrire de SQL !
 
 ## L'authentification
 

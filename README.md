@@ -202,9 +202,14 @@ Nous allons utiliser (Laravel Breeze)[https://laravel.com/docs/9.x/starter-kits#
 
 ❗ Suivez la documentation officielle sans oublier que nous intéragissons avec nos services via Sail
 
+Breeze utilise le framework CSS Tailwind. Dans la suite de ce TP, nous créerons des vues avec Bootstrap, un autre framework CSS.
+
 ## Les routes
 
-routes/web.php
+Nous allons rendre notre application accessible via la route _/home_, pour cela nous allons modifier le fichier routes/web.php <br>
+La gestion des routes avec Laravel est expliqué dans la documentation : https://laravel.com/docs/9.x/routing <br>
+Le middleware _auth_ nous permet de limiter l'accès à l'application aux utilisateurs authentifiés. <br>
+Remplacez le contenu de web.php par le code suivant :
 
 ```php
 <?php
@@ -259,13 +264,11 @@ Route::group(['middleware' => 'auth'], function() {
 });
 ```
 
-Les routes accessibles après s'être authentifié doivent utiliser le middleware _auth_
-
-## Bootstrap 4
+## Les vues
 
 1 - Nous allons créer l'arborescence de dossier _resources/views/posts/partials_ pour héberger nos blocks de code. <br>
 
- 2 - Créer le fichier home.blade.php dans _resources/views/_
+2 - Créer le fichier home.blade.php dans _resources/views/_
 ```php
 @extends('layouts.main')
 
@@ -313,7 +316,8 @@ Les routes accessibles après s'être authentifié doivent utiliser le middlewar
 @endsection
 ```
 
-Nous créons le fichier template _resources/view/layouts/main.blade.php_
+Nous créons le layouts _resources/view/layouts/main.blade.php_
+Nous avons ainsi deux layouts, _app.blade.php_ qui utilise Tailwind et _main.blade.php_ pour Bootstrap
 
 ```php
 <!DOCTYPE html>

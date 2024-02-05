@@ -261,6 +261,11 @@ Route::group(['middleware' => 'auth'], function() {
         // store reply route
 		Route::post('/{comment}', [ReplyController::class, 'store'])->name('store');
 	});
+
+	// Update v10
+    	Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    	Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    	Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 ```
 
